@@ -17,8 +17,8 @@ func main() {
 
 	// Rotas
 	r := mux.NewRouter()
-	r.HandleFunc("/clientes", ClientCreateHandler).Methods("POST")
 	r.HandleFunc("/clientes", ClientListHandler).Methods("GET")
+	r.HandleFunc("/clientes", ClientCreateHandler).Methods("POST")
 	r.HandleFunc("/clientes/{UUID}", ClientDetailHandler).Methods("GET")
 	r.HandleFunc("/clientes/{UUID}", ClientUpdateHandler).Methods("PUT")
 	r.HandleFunc("/clientes/{UUID}", ClientDeleteHandler).Methods("DELETE")

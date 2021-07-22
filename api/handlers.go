@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
 
@@ -55,14 +56,14 @@ func ClientListHandler(w http.ResponseWriter, r *http.Request) {
 func ClientDetailHandler(w http.ResponseWriter, r *http.Request) {
 	attrs := mux.Vars(r)
 
-	uuid := attrs["UUID"]
-	if uuid == "" {
+	uuidAttrs := attrs["UUID"]
+	if uuidAttrs == "" {
 		Error(w, http.StatusBadRequest, errors.New("UUID não definido"))
 		return
 	}
 
 	var client Client
-	client, err := client.Get(uuid)
+	client, err := client.Get(uuidAttrs)
 	if err != nil {
 		Error(w, http.StatusInternalServerError, err)
 		return
