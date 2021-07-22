@@ -8,8 +8,100 @@ import (
 
 type Client struct {
 	UUID          uuid.UUID `json:"uuid"`
-	Nome          string    `json:"nome,omitempty"`
-	Endereco      string    `json:"endereco,omitempty"`
-	Cadastrado_em time.Time `json:"cadastrado_em,omitempty"`
-	Atualizado_em time.Time `json:"atualizado_em,omitempty"`
+	Nome          string    `json:"nome"`
+	Endereco      string    `json:"endereco"`
+	Cadastrado_em time.Time `json:"cadastrado_em"`
+	Atualizado_em time.Time `json:"atualizado_em"`
+}
+
+func (c Client) Create() (string, error) {
+	var lastID string
+	var stmt string
+
+	db, err := Connection()
+	if err != nil {
+		return "", err
+	}
+	defer db.Close()
+
+	stmt = "insert into clients (nome, endereco, cadastrado_em, atualizado_em) values($1, $2, $3, $4) RETURNING uuid"
+
+	erro := db.QueryRow(stmt, c.Nome, c.Endereco, c.Cadastrado_em, c.Atualizado_em).Scan(&lastID)
+	if erro != nil {
+		return "", erro
+	}
+	return lastID, nil
+}
+
+func (c Client) Get(uuid string) (Client, error) {
+	db, err := Connection()
+	if err != nil {
+		return Client{}, err
+	}
+	defer db.Close()
+
+	rows, err := db.Query("SELECT * FROM clients WHERE uuid=$1", uuid)
+	if err != nil {
+		return Client{}, err
+	}
+	defer rows.Close()
+
+	if rows.Next() {
+		erro := rows.Scan(&c.UUID, &c.Nome, &c.Endereco, &c.Cadastrado_em, &c.Atualizado_em)
+		if erro != nil {
+			return Client{}, erro
+		}
+	}
+	return c, nil
+}
+
+func (c Client) All() ([]Client, error) {
+	var clientList []Client
+
+	db, err := Connection()
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	rows, err := db.Query("SELECT * FROM clients ORDER BY cadastrado_em DESC")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var c Client
+
+		err := rows.Scan(&c.UUID, &c.Nome, &c.Endereco, &c.Cadastrado_em, &c.Atualizado_em)
+		if err != nil {
+			return nil, err
+		}
+
+		clientList = append(clientList, c)
+	}
+	return clientList, nil
+}
+
+func (c Client) Update(uuid, Nome, Endereco string) (Client, error) {
+	var lastUUID string
+	stmt := "UPDATE clients SET  nome = $2, endereco = $3 WHERE uuid = $1 RETURNING uuid;"
+
+	db, err := Connection()
+	if err != nil {
+		return c, err
+	}
+	defer db.Close()
+
+	err = db.QueryRow(stmt, uuid, c.Nome, c.Endereco).Scan(&lastUUID)
+	if err != nil {
+		return c, err
+	}
+
+	client, err := c.Get(lastUUID)
+	if err != nil {
+		return c, err
+	}
+
+	return client, nil
 }
