@@ -68,6 +68,11 @@ func ClientDetailHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if client.UUID == uuid.Nil {
+		Error(w, http.StatusNotFound, errors.New("não existe client com esse uuid"))
+		return
+	}
+
 	JSON(w, http.StatusOK, client)
 }
 
