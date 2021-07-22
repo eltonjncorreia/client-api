@@ -4,18 +4,24 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 )
 
 func main() {
+	// carrega arquivo .env
 	err := godotenv.Load(".env")
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
 
 	// Rotas
-	http.HandleFunc("/clientes", clientCreateHandler)
+	r := mux.NewRouter()
+	r.HandleFunc("/clientes", ClientCreateHandler).Methods("POST")
+	r.HandleFunc("/clientes", ClientListHandler).Methods("GET")
+	r.HandleFunc("/clientes/{UUID}", ClientDetailHandler).Methods("GET")
+	r.HandleFunc("/clientes/{UUID}", ClientUpdateHandler).Methods("PUT")
 
 	// server
-	http.ListenAndServe(":8000", nil)
+	http.ListenAndServe(":8000", r)
 }
