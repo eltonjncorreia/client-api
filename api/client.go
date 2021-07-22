@@ -26,9 +26,9 @@ func (c Client) Create() (string, error) {
 
 	stmt = "insert into clients (nome, endereco, cadastrado_em, atualizado_em) values($1, $2, $3, $4) RETURNING uuid"
 
-	erro := db.QueryRow(stmt, c.Nome, c.Endereco, c.Cadastrado_em, c.Atualizado_em).Scan(&lastID)
-	if erro != nil {
-		return "", erro
+	err = db.QueryRow(stmt, c.Nome, c.Endereco, c.Cadastrado_em, c.Atualizado_em).Scan(&lastID)
+	if err != nil {
+		return "", err
 	}
 	return lastID, nil
 }
@@ -36,20 +36,20 @@ func (c Client) Create() (string, error) {
 func (c Client) Get(uuid string) (Client, error) {
 	db, err := Connection()
 	if err != nil {
-		return Client{}, err
+		return c, err
 	}
 	defer db.Close()
 
 	rows, err := db.Query("SELECT * FROM clients WHERE uuid=$1", uuid)
 	if err != nil {
-		return Client{}, err
+		return c, err
 	}
 	defer rows.Close()
 
 	if rows.Next() {
 		erro := rows.Scan(&c.UUID, &c.Nome, &c.Endereco, &c.Cadastrado_em, &c.Atualizado_em)
 		if erro != nil {
-			return Client{}, erro
+			return c, erro
 		}
 	}
 	return c, nil
@@ -104,4 +104,20 @@ func (c Client) Update(uuid, Nome, Endereco string) (Client, error) {
 	}
 
 	return client, nil
+}
+
+func (c Client) Delete(uuid string) error {
+	stmt := "DELETE FROM clients WHERE uuid = $1;"
+
+	db, err := Connection()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	_, err = db.Exec(stmt, uuid)
+	if err != nil {
+		return err
+	}
+	return nil
 }

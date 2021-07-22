@@ -21,6 +21,7 @@ func main() {
 	r.HandleFunc("/clientes", ClientListHandler).Methods("GET")
 	r.HandleFunc("/clientes/{UUID}", ClientDetailHandler).Methods("GET")
 	r.HandleFunc("/clientes/{UUID}", ClientUpdateHandler).Methods("PUT")
+	r.HandleFunc("/clientes/{UUID}", ClientDeleteHandler).Methods("DELETE")
 
 	// server
 	http.ListenAndServe(":8000", r)
