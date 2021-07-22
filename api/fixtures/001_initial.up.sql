@@ -1,0 +1,20 @@
+CREATE OR REPLACE FUNCTION trigger_set_timestamp()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.atualizado_em = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TABLE clients (
+	uuid uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+    nome VARCHAR (255) NOT NULL,    
+    endereco VARCHAR (255) NOT NULL,    
+	cadastrado_em TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+	atualizado_em TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TRIGGER set_timestamp
+BEFORE UPDATE ON clients
+FOR EACH ROW
+EXECUTE PROCEDURE trigger_set_timestamp();
